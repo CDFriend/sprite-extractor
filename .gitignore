@@ -1,0 +1,6 @@
+# MacOS files
+.DS_Store
+
+# Compiled Python files
+*.pyc
+build

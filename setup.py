@@ -5,6 +5,7 @@ setup(
     version="1.0",
     author="Charlie Friend",
     author_email="charles.d.friend@gmail.com",
-    description="Script for extracting sprite images from spritesheets"
+    description="Script for extracting sprite images from spritesheets",
+    packages=["sprite_extractor"]
 )
 
