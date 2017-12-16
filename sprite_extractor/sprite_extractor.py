@@ -3,19 +3,23 @@ Sprite Extractor v1.0
 By Charlie Friend, 2017
 
 Extracts individual sprite images from a single sprite sheet image (PNG).
-e.g. sprite_sheet.png -> sprite_sheet/im_1.png, im_2.png ...
+e.g. sprite_sheet.png -> out/im_1.png, im_2.png ...
 
-Sprites should be of equal size ad equally spaced across the sprite sheet.
+Sprite locations are specified by a csv file.
 
-Options:
-    --rows [int]: Number of rows of sprites in the sheet.
-    --columns [int]: Number of columns of sprites in the sheet.
+CSV schema:
+    x [int]: start x position
+    y [int]: start y position
+    width [int]: sprite width (pix)
+    height [int]: sprite height (pix)
+    filename [str]: filename to write to
 
 Generates (rows * columns) sprite images.
 """
 
-import argparse
 import os
+import csv
+import sys
 import PIL.Image as Image
 
 
@@ -36,40 +40,39 @@ def save_image_seg(img, loc, file_name, format="PNG"):
 
 def main():
     # extract command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--rows", type=int)
-    parser.add_argument("-c", "--columns", type=int)
-    parser.add_argument("--file", type=str)
-    args = parser.parse_args()
+    if len(sys.argv) != 3:
+        print "Usage: python sprite_extractor.py <image_file> <csv_file>"
+    sheet_file = sys.argv[1]
+    csv_file = sys.argv[2]
 
     print("Starting sprite extractor...")
 
-    sprite_sheet = Image.open(args.file)
-    
-    sprite_width = sprite_sheet.width / args.columns
-    sprite_height = sprite_sheet.height / args.rows
+    sprite_sheet = Image.open(sheet_file)
 
-    print("Attempting to extract %d images (%dx%d)." % (args.rows * args.columns, 
-                                                        sprite_width, sprite_height))
-
-    dir_name = os.path.splitext(args.file)[0]
+    # make output directory
+    dir_name = "out"
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
 
-    im_num = 1
-    for y_num in xrange(args.rows):
-        for x_num in xrange(args.columns):
-            x_pos = x_num * sprite_width
-            y_pos = y_num * sprite_height
+    # read input CSV
+    segments = None
+    with open(csv_file, 'rb') as file:
+        reader = csv.DictReader(file)
+        segments = [line for line in reader]
 
-            file_name = os.path.join(dir_name, "im_%d.png" % im_num)
+    for seg in segments:
+        file_name = os.path.join(dir_name, seg['filename'])
 
-            # crop and save image
-            save_image_seg(sprite_sheet, (x_pos, y_pos, sprite_width, sprite_height), file_name)
-
-            im_num += 1
+        # crop and save image
+        save_image_seg(sprite_sheet,
+                       ( int(seg['x']),
+                         int(seg['y']),
+                         int(seg['width']),
+                         int(seg['height']) ),
+                       file_name)
 
     print("Done!")
+
 
 if __name__ == "__main__":
     main()
