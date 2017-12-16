@@ -19,6 +19,21 @@ import os
 import PIL.Image as Image
 
 
+def save_image_seg(img, loc, file_name, format="PNG"):
+    """
+    Save a cropped portion of an image to file.
+    :param img: PIL image
+    :param loc: 4-tuple containing (x, y, width, height)
+    :param file_name: File name to be saved to.
+    :param format: PIL output image file format (default .png)
+    """
+    assert len(loc) == 4, "loc must be: (x, y, width, height)"
+
+    print("(%d, %d, %d, %d) -> %s" % (loc[0], loc[1], loc[2], loc[3], file_name))
+    cropped_image = img.crop((loc[0], loc[1], loc[0] + loc[2], loc[1] + loc[3]))
+    cropped_image.save(file_name, format="PNG")
+
+
 def main():
     # extract command line arguments
     parser = argparse.ArgumentParser()
@@ -50,9 +65,7 @@ def main():
             file_name = os.path.join(dir_name, "im_%d.png" % im_num)
 
             # crop and save image
-            print("(%d, %d) -> %s" % (x_pos, y_pos, file_name))
-            cropped_image = sprite_sheet.crop((x_pos, y_pos, x_pos + sprite_width, y_pos + sprite_height))
-            cropped_image.save(file_name, format="PNG")
+            save_image_seg(sprite_sheet, (x_pos, y_pos, sprite_width, sprite_height), file_name)
 
             im_num += 1
 
